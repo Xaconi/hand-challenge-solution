@@ -8,6 +8,7 @@ let inputCharacters = [];
 let inputCharactersPointer = 0;
 let memoryInfo = [0];
 let memoryPointer = 0;
+let nestedLoopIndex = 0;
 
 // Constants
 const CHAR_LIMIT = 255;
@@ -102,11 +103,12 @@ function decreaseMemoryInfoValue() {
 }
 
 function showMemoryInfoValue() {
-    console.log(String.fromCharCode(memoryInfo[memoryPointer]));
+    process.stdout.write(String.fromCharCode(memoryInfo[memoryPointer]));
 }
 
 function jumpToHandPunchRight() {
     if(memoryInfo[memoryPointer] != 0) {
+        nestedLoopIndex -= 1;
         const index = findNextHandPunchRight();
         inputCharactersPointer = index + 1;
     } else
@@ -115,6 +117,7 @@ function jumpToHandPunchRight() {
 
 function jumpToHandPunchLeft() {
     if(memoryInfo[memoryPointer] == 0) {
+        nestedLoopIndex += 1;
         const index = findNextHandPunchLeft();
         inputCharactersPointer = index + 1;
     } else
@@ -122,15 +125,25 @@ function jumpToHandPunchLeft() {
 }
 
 function findNextHandPunchRight() {
-    while(inputCharacters[inputCharactersPointer] != HAND_PUNCH_RIGHT){
+    do {
         inputCharactersPointer--;
-    } 
+        checkNestedLoops();
+    } while(inputCharacters[inputCharactersPointer] != HAND_PUNCH_RIGHT || nestedLoopIndex != 0);
     return inputCharactersPointer;
 }
 
 function findNextHandPunchLeft() {
-    while(inputCharacters[inputCharactersPointer] != HAND_PUNCH_LEFT) {
+    do {
         inputCharactersPointer++;
-    }
+        checkNestedLoops();
+    } while(inputCharacters[inputCharactersPointer] != HAND_PUNCH_LEFT || nestedLoopIndex != 0);
     return inputCharactersPointer;
+}
+
+function checkNestedLoops() {
+    if(inputCharacters[inputCharactersPointer] == HAND_PUNCH_RIGHT)
+        nestedLoopIndex++;
+
+    if(inputCharacters[inputCharactersPointer] == HAND_PUNCH_LEFT)
+        nestedLoopIndex--;
 }
