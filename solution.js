@@ -12,17 +12,21 @@ let nestedLoopIndex = 0;
 
 // Constants
 const CHAR_LIMIT = 255;
-const HAND_FINGER_UP = '👆';
-const HAND_FINGER_DOWN = '👇';
-const HAND_FINGER_LEFT = '👈';
-const HAND_FINGER_RIGHT = '👉';
-const HAND_PUNCH_LEFT = '🤛';
-const HAND_PUNCH_RIGHT = '🤜';
-const HAND_PUNCH = '👊';
 
 // Read input
 const inputFile = process.argv.find(argument => argument.startsWith( `--input=` ));
 const inputFileValue = inputFile.replace(`--input=` , '');
+
+// Actions
+const actions = {
+    '👉': () => moveMemoryPointerNextCell(),
+    '👈': () => moveMemoryPointerPreviousCell(),
+    '👆': () => increaseMemoryInfoValue(),
+    '👇': () => decreaseMemoryInfoValue(),
+    '👊': () => showMemoryInfoValue(),
+    '🤛': () => jumpToHandPunchRight(),
+    '🤜': () => jumpToHandPunchLeft()
+}
 
 fs.readFile(inputFileValue, 'utf8' , (err, data) => {
     if (err) {
@@ -34,35 +38,7 @@ fs.readFile(inputFileValue, 'utf8' , (err, data) => {
     // Loop over input's instructions
     while(inputCharactersPointer < inputCharacters.length) {
         const char = inputCharacters[inputCharactersPointer];
-        // Execute input instruction
-        switch(char) {
-            case HAND_FINGER_RIGHT:
-                moveMemoryPointerNextCell();
-                inputCharactersPointer++;
-                break;
-            case HAND_FINGER_LEFT:
-                moveMemoryPointerPreviousCell();
-                inputCharactersPointer++;
-                break;
-            case HAND_FINGER_UP:
-                increaseMemoryInfoValue();
-                inputCharactersPointer++;
-                break;
-            case HAND_FINGER_DOWN:
-                decreaseMemoryInfoValue();
-                inputCharactersPointer++;
-                break;
-            case HAND_PUNCH:
-                showMemoryInfoValue();
-                inputCharactersPointer++;
-                break;
-            case HAND_PUNCH_LEFT:
-                jumpToHandPunchRight();
-                break;
-            case HAND_PUNCH_RIGHT:
-                jumpToHandPunchLeft();
-                break;
-        }
+        actions[char]();
     }
 });
 
@@ -84,26 +60,31 @@ function moveMemoryPointerNextCell() {
     memoryPointer += 1;
     if(typeof memoryInfo[memoryPointer] == 'undefined')
         memoryInfo[memoryPointer] = 0;
+    inputCharactersPointer++;
 }
 
 function moveMemoryPointerPreviousCell() {
     memoryPointer -= 1;
+    inputCharactersPointer++;
 }
 
 function increaseMemoryInfoValue() {
     memoryInfo[memoryPointer] += 1;
     if(memoryInfo[memoryPointer] > CHAR_LIMIT)
         memoryInfo[memoryPointer] = 0;
+    inputCharactersPointer++;
 }
 
 function decreaseMemoryInfoValue() {
     memoryInfo[memoryPointer] -= 1;
     if(memoryInfo[memoryPointer] < 0)
         memoryInfo[memoryPointer] = CHAR_LIMIT;
+    inputCharactersPointer++;
 }
 
 function showMemoryInfoValue() {
     process.stdout.write(String.fromCharCode(memoryInfo[memoryPointer]));
+    inputCharactersPointer++;
 }
 
 function jumpToHandPunchRight() {
@@ -128,7 +109,7 @@ function findNextHandPunchRight() {
     do {
         inputCharactersPointer--;
         checkNestedLoops();
-    } while(inputCharacters[inputCharactersPointer] != HAND_PUNCH_RIGHT || nestedLoopIndex != 0);
+    } while(inputCharacters[inputCharactersPointer] != '🤜' || nestedLoopIndex != 0);
     return inputCharactersPointer;
 }
 
@@ -136,14 +117,14 @@ function findNextHandPunchLeft() {
     do {
         inputCharactersPointer++;
         checkNestedLoops();
-    } while(inputCharacters[inputCharactersPointer] != HAND_PUNCH_LEFT || nestedLoopIndex != 0);
+    } while(inputCharacters[inputCharactersPointer] != '🤛' || nestedLoopIndex != 0);
     return inputCharactersPointer;
 }
 
 function checkNestedLoops() {
-    if(inputCharacters[inputCharactersPointer] == HAND_PUNCH_RIGHT)
+    if(inputCharacters[inputCharactersPointer] == '🤜')
         nestedLoopIndex++;
 
-    if(inputCharacters[inputCharactersPointer] == HAND_PUNCH_LEFT)
+    if(inputCharacters[inputCharactersPointer] == '🤛')
         nestedLoopIndex--;
 }
